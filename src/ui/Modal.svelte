@@ -23,7 +23,7 @@
 	} from 'utils/Search';
 
 	// const
-	const CARDS_PER_PAGE = 10;
+	const CARDS_PER_PAGE = 20;
 	// const instructions: Instruction[] = [
 	// 	{ command: '↑↓', purpose: 'to navigate' },
 	// 	{ command: 'ctrl + n/p', purpose: 'to navigate' },
@@ -401,11 +401,13 @@
 		display: grid;
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 		/* grid-template-rows: repeat(attr(data-row), 1fr); */
-		grid-template-rows: repeat(2, 1fr);
+		grid-template-rows: repeat(2, 500px);
 		grid-gap: 20px;
 		height: 100%;
 		width: 100%;
 		min-height: 0;
 		z-index: 1; /* to put this in front of background */
+		grid-auto-rows: 500px;
+		overflow: scroll;
 	}
 </style>

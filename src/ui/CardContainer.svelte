@@ -148,7 +148,7 @@
 
 <style>
 	.card-container {
-		overflow: hidden;
+		/* overflow: hidden; */
 		display: flex;
 		flex-direction: column;
 		height: 100%;

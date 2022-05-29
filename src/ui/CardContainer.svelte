@@ -138,7 +138,7 @@
 	on:click={onClicked}
 	on:mouseover={onMouseOver(id)}
 >
-    {id}
+    <!-- {id} -->
 	<div class="card-container-header">
 		<!-- <div class="file-icon-container" bind:this={iconContainerEl} /> -->
 		<div class="file-name-container" bind:this={fileNameContainerEl} />

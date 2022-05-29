@@ -26,6 +26,7 @@
 		type SearchDetails
 	} from 'utils/Search';
 	import InfiniteScroll from 'svelte-infinite-scroll';
+	import { getAPI } from "obsidian-dataview";
 
 	// const
 	const CARDS_PER_PAGE = 10;
@@ -250,6 +251,36 @@
 				}
 			})
 			return results;
+		} else if (spaceTrimmedQuery.startsWith("~")) {
+			const trimmedQuery = spaceTrimmedQuery.replace(/^~/, '');
+			if (window.dvSearchResults === undefined) {
+				return [];
+			}
+			const files = window.dvSearchResults.map(r => {
+				return $app.vault.getAbstractFileByPath(r.file.path)
+			});
+			return files.map(f => {
+				return {
+					file: f,
+					name: f.basename,
+					path: f.path,
+					content: undefined
+				}
+			})
+			// search(trimmedQuery);
+			// await getFoundAfterDelay();
+			// const searchResults = await getFoundAfterDelay()
+			// const files = Array.from(searchResults.keys())
+			// console.log(files);
+			// const results = files.map((k) => {
+			// 	return {
+			// 		file: searchResults.get(k).file,
+			// 		name: k.basename,
+			// 		path: k.path,
+			// 		content: searchResults.get(k).content
+			// 	}
+			// })
+			// return results;
 		} else if (spaceTrimmedQuery.startsWith(';')) {
 			const trimmedQuery = spaceTrimmedQuery.replace(/^;/, '');
 			const files = $app.vault.getFiles();

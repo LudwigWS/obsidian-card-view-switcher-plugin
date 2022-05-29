@@ -21,9 +21,10 @@
 		sortResultItemsInFilePathSearch,
 		type FileSearchResultItem,
 	} from 'utils/Search';
+	import InfiniteScroll from 'svelte-infinite-scroll';
 
 	// const
-	const CARDS_PER_PAGE = 20;
+	const CARDS_PER_PAGE = 10;
 	// const instructions: Instruction[] = [
 	// 	{ command: '↑↓', purpose: 'to navigate' },
 	// 	{ command: 'ctrl + n/p', purpose: 'to navigate' },
@@ -249,7 +250,7 @@
 	) {
 		// refresh
 		// contentEl.empty(); // unnecessary. rather cause error when used
-		detachCards();
+		// detachCards();
 
 		for (
 			let id = CARDS_PER_PAGE * page;
@@ -319,7 +320,16 @@
 		</div>
 	</div>
 
-	<div class="cards-container" bind:this={contentEl} />
+	<div class="cards-container" bind:this={contentEl} >
+		<InfiniteScroll threshold={100} on:loadMore={() => {
+			console.log(console.log("hello")); 
+			page++;
+			if (contentEl instanceof HTMLElement) {
+				renderCards(contentEl, results, page);
+			}
+
+		}} />
+	</div>
 </div>
 
 <style>

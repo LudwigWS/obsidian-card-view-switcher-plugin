@@ -20,6 +20,9 @@
 		searchInFiles,
 		sortResultItemsInFilePathSearch,
 		type FileSearchResultItem,
+		search,
+		getFoundAfterDelay,
+		type SearchDetails
 	} from 'utils/Search';
 	import InfiniteScroll from 'svelte-infinite-scroll';
 
@@ -212,6 +215,22 @@
 			const results = sortResultItemsInFilePathSearch(
 				fuzzySearchInFilePaths(trimmedQuery, files)
 			);
+			return results;
+		} else if (spaceTrimmedQuery.startsWith(":")) {
+			const trimmedQuery = spaceTrimmedQuery.replace(/^:/, '');
+			search(trimmedQuery);
+			await getFoundAfterDelay();
+			const searchResults = await getFoundAfterDelay()
+			const files = Array.from(searchResults.keys())
+			console.log(files);
+			const results = files.map((k) => {
+				return {
+					file: searchResults.get(k).file,
+					name: k.basename,
+					path: k.path,
+					content: searchResults.get(k).content
+				}
+			})
 			return results;
 		} else if (spaceTrimmedQuery.startsWith(';')) {
 			const trimmedQuery = spaceTrimmedQuery.replace(/^;/, '');

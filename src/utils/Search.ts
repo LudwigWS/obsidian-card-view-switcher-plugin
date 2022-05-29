@@ -133,3 +133,65 @@ export function pickRandomly<T>(array: T[], num: number): T[] {
 // 		}
 // 	}
 // }
+
+type NumberTuple = [number, number]
+
+export interface SearchDetails {
+    app: App
+    children: any[]
+    childrenEl: HTMLElement
+    collapseEl: HTMLElement
+    collapsed: boolean
+    collapsible: boolean
+    containerEl: HTMLElement
+    content: string
+    dom: any
+    el: HTMLElement
+    extraContext: () => boolean
+    file: TFile
+    info: any
+    onMatchRender: any
+    pusherEl: HTMLElement
+    result: {
+        filename?: NumberTuple[]
+        content?: NumberTuple[]
+    }
+}
+
+export function search(s: string) {
+	// @ts-ignore
+	const globalSearchFn = this.app.internalPlugins.getPluginById('global-search').instance.openGlobalSearch.bind(this)
+	const search = (query: string) => globalSearchFn(query)
+
+	// const leftSplitState = {
+	// 	// @ts-ignore
+	// 	collapsed: this.app.workspace.leftSplit.collapsed,
+	// 	// @ts-ignore
+	// 	tab: this.getSearchTabIndex()
+	// }
+
+	search(s)
+	// if (leftSplitState.collapsed) {
+	// 	// @ts-ignore
+	// 	this.app.workspace.leftSplit.collapse()
+	// }
+
+	// // @ts-ignore
+	// if (leftSplitState.tab !== this.app.workspace.leftSplit.children[0].currentTab) {
+	// 	// @ts-ignore
+	// 	this.app.workspace.leftSplit.children[0].selectTabIndex(leftSplitState.tab)
+	// }
+}
+
+export async function getFoundAfterDelay(): Promise<Map<TFile, SearchDetails>> {
+	const searchLeaf = this.app.workspace.getLeavesOfType('search')[0]
+	const view = await searchLeaf.open(searchLeaf.view)
+	return new Promise(resolve => {
+		setTimeout(() => {
+			// @ts-ignore
+			const results = view.dom.resultDomLookup as Map<TFile, SearchDetails>
+
+			return resolve(results)
+		}, 10000)
+	})
+}

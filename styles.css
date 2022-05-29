@@ -13,3 +13,7 @@ span {
 	--highlight-search-match-bg: var(--text-highlight-bg);
 	--focus-search-match-bg: #ff9633;
 }
+
+#svelte-infinite-scroll {
+	display: none;
+}

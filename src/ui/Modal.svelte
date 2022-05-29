@@ -11,8 +11,9 @@
 		HOTKEY_ACTION_INFO,
 	} from 'Setting';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import {writable} from 'svelte/store'
 	import CardContainer from 'ui/CardContainer.svelte';
-	import { app, plugin, switcher } from 'ui/store';
+	import { app, plugin, switcher} from 'ui/store';
 	import { convertHotkeyToText } from 'utils/Keymap';
 	import {
 		fuzzySearchInFilePaths,
@@ -61,11 +62,25 @@
 
 	// state variables
 	let results: FileSearchResultItem[];
-	let selected = 0;
+	let selected = writable(0);
 	let page = 0;
 	let cards: CardContainer[] = [];
 	// type SearchMode = 'normal' | 'recent';
 	// let mode: SearchMode = 'recent';
+	const context = new Map<string, number>();
+	context.set("selectedIndex", selected)
+	let lastFocusedIndex: number = 0;
+	selected.subscribe(value => {
+			console.log("lastFocusedIndex:" + lastFocusedIndex)
+			if (value !== lastFocusedIndex) {
+				if (cards[lastFocusedIndex] !== undefined) {
+					cards[lastFocusedIndex].$set({ selected: false });
+				}
+			}
+			lastFocusedIndex = value;
+		});
+
+	let lastItemId: number = 0;
 
 	// debouncer
 	const searchAndRenderDebouncer = debounce(searchAndRender, 100, true);
@@ -90,58 +105,66 @@
 	export function navigateForward() {
 		// update selected
 		let updated = true;
-		selected++;
+		$selected++;
 
-		if (selected >= results.length) {
-			selected = results.length - 1;
+		if ($selected >= results.length) {
+			$selected = results.length - 1;
 			updated = false;
 		}
 
-		focusOn(selected);
+		focusOn($selected);
 
 		// update page
 		if (updated) {
-			const shouldTransitNextPage = selected % CARDS_PER_PAGE === 0;
+			const shouldTransitNextPage = $selected % CARDS_PER_PAGE === 0;
 			if (shouldTransitNextPage) {
-				page++;
-				if (contentEl instanceof HTMLElement) {
-					renderCards(contentEl, results, page);
-				}
-				focusOn(selected);
+				nextPage();
 			}
 		}
+	}
+
+	function nextPage() {
+		page++;
+		if (contentEl instanceof HTMLElement) {
+			renderCards(contentEl, results, page);
+		}
+		focusOn($selected);
 	}
 
 	export function navigateBack() {
 		// update selected
 		let updated = true;
-		selected--;
-		if (selected < 0) {
-			selected = 0;
+		$selected--;
+		if ($selected < 0) {
+			$selected = 0;
 			updated = false;
 		}
 
-		focusOn(selected);
+		focusOn($selected);
 
 		// update page
 		if (updated) {
 			const shouldTransitPreviousPage =
-				(selected + 1) % CARDS_PER_PAGE === 0;
+				($selected + 1) % CARDS_PER_PAGE === 0;
 			if (shouldTransitPreviousPage) {
-				page--;
-				if (contentEl instanceof HTMLElement) {
-					renderCards(contentEl, results, page);
-				}
-				focusOn(selected);
+				previousPage();
 			}
 		}
 	}
 
+	function previousPage() {
+		page--;
+		if (contentEl instanceof HTMLElement) {
+			renderCards(contentEl, results, page);
+		}
+		focusOn($selected);
+	}
+
 	export async function open(direction?: SplitDirection) {
-		if (selected === undefined) {
+		if ($selected === undefined) {
 			return;
 		}
-		const file = results[selected]?.file;
+		const file = results[$selected]?.file;
 		if (file === undefined) {
 			return;
 		}
@@ -151,7 +174,7 @@
 	}
 
 	export function selectedResult(): FileSearchResultItem | undefined {
-		const result = results[selected];
+		const result = results[$selected];
 		return result;
 	}
 
@@ -166,7 +189,7 @@
 
 	async function searchAndRender(inputEl: HTMLInputElement) {
 		// refresh
-		selected = 0;
+		$selected = 0;
 		page = 0;
 		detachCards();
 		// contentEl?.empty(); // unnecessary. rather cause error when used
@@ -179,16 +202,11 @@
 	}
 
 	function focusOn(id: number) {
-		const pos = id % CARDS_PER_PAGE; // id in results => position in cards
-		[-1, 0, 1].forEach((i) => {
-			const card = cards[pos + i];
-			if (!card) return;
-			if (i == 0) {
-				card.$set({ selected: true });
-			} else {
-				card.$set({ selected: false });
-			}
-		});
+		// const pos = id % CARDS_PER_PAGE; // id in results => position in cards
+		const card = cards[id];
+		if (!card) return;
+		card.$set({ selected: true });
+		lastFocusedIndex = id;
 	}
 
 	async function openFile(file: TFile, direction?: SplitDirection) {
@@ -285,11 +303,12 @@
 					file: result.file,
 					matches: result?.path?.matches ?? [],
 					selected: false,
-					focusEl: inputEl,
+					focusEl: inputEl
 				},
+				context: context
 			});
 			card.$on('click', () => {
-				selected = id;
+				$selected = id;
 				open();
 			});
 			cards.push(card);
@@ -340,6 +359,7 @@
 	</div>
 
 	<div class="cards-container" bind:this={contentEl} >
+		<!-- <div>{$selected}</div> -->
 		<InfiniteScroll threshold={100} on:loadMore={() => {
 			console.log(console.log("hello")); 
 			page++;
@@ -430,13 +450,13 @@
 		display: grid;
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 		/* grid-template-rows: repeat(attr(data-row), 1fr); */
-		grid-template-rows: repeat(2, 500px);
+		grid-template-rows: repeat(2, 800px);
 		grid-gap: 20px;
 		height: 100%;
 		width: 100%;
 		min-height: 0;
 		z-index: 1; /* to put this in front of background */
-		grid-auto-rows: 500px;
+		grid-auto-rows: 800px;
 		overflow: scroll;
 	}
 </style>

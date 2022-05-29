@@ -192,6 +192,6 @@ export async function getFoundAfterDelay(): Promise<Map<TFile, SearchDetails>> {
 			const results = view.dom.resultDomLookup as Map<TFile, SearchDetails>
 
 			return resolve(results)
-		}, 10000)
+		}, 3000)
 	})
 }

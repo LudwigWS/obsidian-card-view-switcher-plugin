@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { app } from 'ui/store';
 	import type { SearchMatches, TFile } from 'obsidian';
-	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import { getContext, setContext, createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { fileTypeMap, ViewGenerator } from 'interfaces/ViewGenerator';
 	import { ExcalidrawViewGeneratorExtension } from 'interfaces/viewGeneratorExtensions/Excalidraw';
 	import { KanbanViewGeneratorExtension } from 'interfaces/viewGeneratorExtensions/Kanban';
 	import { MarkdownViewGeneratorExtension } from 'interfaces/viewGeneratorExtensions/Markdown';
 	import { NonMarkdownViewGeneratorExtension } from 'interfaces/viewGeneratorExtensions/NonMarkdown';
+	import { writable } from 'svelte/store'
 
 	// consts
 	// extension: file type
@@ -53,6 +54,7 @@
 	let contentContainerEl: HTMLElement | undefined | null;
 	let fileNameContainerEl: HTMLElement | undefined | null;
 	// let iconContainerEl: HTMLElement | undefined | null;
+	let selectedIndex: writable = getContext("selectedIndex")
 
 	// internal variables
 	let renderer: ViewGenerator | undefined;
@@ -92,6 +94,10 @@
 	function onClicked() {
 		dispatch('click');
 	}
+	function onMouseOver(index: number) {
+		selectedIndex.set(index)
+		selected = true;
+	}
 
 	// function setFileIcon(file: TFile) {
 	// 	if (!iconContainerEl) {
@@ -130,7 +136,9 @@
 	data-id={id}
 	data-path={file.path}
 	on:click={onClicked}
+	on:mouseover={onMouseOver(id)}
 >
+    {id}
 	<div class="card-container-header">
 		<!-- <div class="file-icon-container" bind:this={iconContainerEl} /> -->
 		<div class="file-name-container" bind:this={fileNameContainerEl} />
@@ -160,12 +168,10 @@
 		box-sizing: content-box;
 	}
 
-	.card-container:hover {
-		/* top: -2px;
-		box-shadow: 0 4px 5px var(--interactive-accent); */
+	/* .card-container:hover {
 		border: 5px solid var(--interactive-accent);
 		margin: -5px;
-	}
+	} */
 
 	.card-container.is-selected {
 		/* top: -2px;
